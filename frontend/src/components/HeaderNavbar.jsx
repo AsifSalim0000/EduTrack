@@ -1,0 +1,101 @@
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { useLogoutUserMutation } from '../store/userApiSlice';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+
+const HeaderNavbar = () => {
+    const user = useSelector((state) => state.user);
+    const [logout] = useLogoutUserMutation();
+
+    const handleLogout = async (e) => {
+        e.preventDefault();
+        await logout();
+        window.location.href = '/';
+    };
+
+    return (
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+            <div className="container-fluid">
+                <Link className="navbar-brand" to="/">EduTrack</Link>
+                <button 
+                    className="navbar-toggler" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" 
+                    aria-expanded="false" 
+                    aria-label="Toggle navigation"
+                >
+                    <span className="navbar-toggler-icon"></span>
+                </button>
+                <div className="collapse navbar-collapse" id="navbarNav">
+                    <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/courses">Courses</Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/become-a-tutor">Become a Tutor</Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/pricing">Price & Planning</Link>
+                        </li>
+                    </ul>
+                    <form className="d-flex ms-auto">
+                        <input 
+                            className="form-control me-2" 
+                            type="search" 
+                            placeholder="Search" 
+                            aria-label="Search" 
+                        />
+                        <button className="btn btn-outline-success" type="submit">
+                            <i className="bi bi-search"></i>
+                        </button>
+                    </form>
+                    <ul className="navbar-nav ms-3">
+                        {user ? (
+                            <>
+                                <li className="nav-item">
+                                    <a 
+                                        className="nav-link" 
+                                        href="#" 
+                                        onClick={handleLogout}
+                                    >
+                                        Logout
+                                    </a>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/cart">
+                                        <i className="bi bi-cart"></i>
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/wishlist">
+                                        <i className="bi bi-heart"></i>
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/profile">
+                                        <i className="bi bi-person"></i>
+                                    </Link>
+                                </li>
+                            </>
+                        ) : (
+                            <>
+                                <li className="nav-item">
+                                    <Link className="btn btn-dark me-2" to="/login">Login</Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="btn btn-outline-dark" to="/register">Register</Link>
+                                </li>
+                            </>
+                        )}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    );
+};
+
+export default HeaderNavbar;
