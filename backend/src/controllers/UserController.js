@@ -1,5 +1,8 @@
 import jwt from 'jsonwebtoken';
 import UserManagement from '../usecases/UserManagement.js';
+import generateToken from '../utils/generateToken.js';
+import { verifyGoogleToken } from '../usecases/VerifyGoogleToken.js';
+import { findByEmail, createUser } from '../repositories/UserRepository.js';
 
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
@@ -24,6 +27,38 @@ const loginUser = async (req, res) => {
     }
   };
   
+  const googleAuthHandler = async (req, res) => {
+    const { token } = req.body;
+
+    try {
+
+        const googleUser = await verifyGoogleToken(token);
+
+        let user = await findByEmail(googleUser.email);
+        if (!user) {
+           
+            user = await createUser({
+                email: googleUser.email,
+                username: googleUser.name,
+                password: '123456', 
+            });
+        }
+
+        generateToken(res, user._id); 
+
+        res.json({
+            user: {
+                email: user.email,
+                _id: user._id,
+                username: user.username,
+                isAdmin: user.isAdmin, 
+            },
+        });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 const logoutUser = (req, res) => {
     res.cookie('jwt', '', {
       httpOnly: true,
@@ -32,4 +67,4 @@ const logoutUser = (req, res) => {
     res.status(200).json({ message: 'Logged out successfully' });
   };
 
-export { logoutUser ,loginUser};
+export { logoutUser ,loginUser,googleAuthHandler};

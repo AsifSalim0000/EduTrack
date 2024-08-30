@@ -1,17 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
-import { useSendOtpMutation } from '../store/userApiSlice';
+import { useLoginUserMutation, useGoogleAuthMutation } from '../store/userApiSlice';
 import { toast } from 'react-toastify';
 import FormContainer from '../components/FormContainer';
 import Loader from '../components/Loader';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCredentials } from '../store/authSlice';
+import { GoogleLogin } from '@react-oauth/google';
 
-const RegisterForm = () => {
-  const [formData, setFormData] = useState({ email: '', username: '', password: '' });
+const LoginForm = () => {
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState(null);
-  const [sendOtp, { isLoading }] = useSendOtpMutation();
+  const [loginUser, { isLoading }] = useLoginUserMutation();
+  const [googleAuth, { isLoading: googleLoading }] = useGoogleAuthMutation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -19,7 +23,7 @@ const RegisterForm = () => {
       navigate('/');
     }
   }, [navigate, userInfo]);
-  
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -28,26 +32,43 @@ const RegisterForm = () => {
     e.preventDefault();
 
     const email = formData.email.trim();
-    const username = formData.username.trim();
     const password = formData.password.trim();
 
-    if (!email || !username || !password) {
+    if (!email || !password) {
       toast.error('Please fill in all fields correctly.');
       return;
     }
+
     try {
-      await sendOtp(formData).unwrap();
-      toast.success('OTP sent successfully');
-      navigate('/verify-otp');
+      const res = await loginUser(formData).unwrap();
+      dispatch(setCredentials({ ...res }));
+      toast.success('Logged in successfully');
+      navigate('/');
     } catch (err) {
       toast.error(err?.data?.message || err.error);
       setError(err.data?.error || 'An error occurred');
     }
   };
 
+  const handleGoogleSuccess = async (response) => {
+    try {
+      const res = await googleAuth(response.credential).unwrap();
+      dispatch(setCredentials({ ...res }));
+      toast.success('Logged in with Google successfully');
+      navigate('/');
+    } catch (err) {
+      toast.error(err?.data?.message || 'Google sign-in failed');
+    }
+  };
+
+  const handleGoogleError = (error) => {
+    console.error(error);
+    toast.error('Google sign-in failed');
+  };
+
   return (
     <FormContainer>
-      <h1 className="mb-4">Create Account</h1>
+      <h1 className="mb-4">Login</h1>
       {error && <div className="alert alert-danger">{error}</div>}
       <Form onSubmit={handleSubmit}>
         <Form.Group className="my-3" controlId="email">
@@ -57,19 +78,6 @@ const RegisterForm = () => {
             placeholder="Enter email"
             name="email"
             value={formData.email}
-            onChange={handleChange}
-            className="form-control"
-            required
-          />
-        </Form.Group>
-
-        <Form.Group className="my-3" controlId="username">
-          <Form.Label>Username</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter username"
-            name="username"
-            value={formData.username}
             onChange={handleChange}
             className="form-control"
             required
@@ -89,8 +97,8 @@ const RegisterForm = () => {
           />
         </Form.Group>
 
-        <Button type="submit" variant="primary" className="mt-4 w-100">
-          Sign Up / Register
+        <Button type="submit" variant="primary" className="mt-4 w-100" disabled={isLoading}>
+          Login
         </Button>
 
         {isLoading && <Loader />}
@@ -98,9 +106,26 @@ const RegisterForm = () => {
 
       <Row className="py-3">
         <Col className="text-center">
-          Already have an account?{' '}
-          <Link to="/login" className="text-decoration-none">
-            Login Here
+          Don't have an account?{' '}
+          <Link to="/register" className="text-decoration-none">
+            Sign Up Here
+          </Link>
+        </Col>
+      </Row>
+
+      <Row className="py-3">
+        <Col className="text-center">
+          <GoogleLogin className='w-100'
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+          />
+        </Col>
+      </Row>
+
+      <Row className="py-3">
+        <Col className="text-center">
+          <Link to="/forgot-password" className="text-decoration-none">
+            Forgot Password?
           </Link>
         </Col>
       </Row>
@@ -108,4 +133,4 @@ const RegisterForm = () => {
   );
 };
 
-export default RegisterForm;
+export default LoginForm;

@@ -31,6 +31,26 @@ const apiSlice = createApi({
                 method: 'POST',
             }),
         }),
+        googleAuth: builder.mutation({
+            query: (token) => ({
+                url: '/google-auth',
+                method: 'POST',
+                body: { token },
+            }),
+        }),
+        forgotOtp: builder.mutation({
+            query: (email) => ({
+                url: '/forgot-otp',
+                method: 'POST',
+                body: email,  
+            }),
+        }),
+        resendOtp: builder.mutation({
+            query: () => ({
+                url: '/logout',
+                method: 'POST',
+            }),
+        }),
     }),
 });
 
@@ -39,6 +59,9 @@ export const {
     useVerifyOtpMutation,
     useLoginUserMutation,
     useLogoutUserMutation,
+    useGoogleAuthMutation,
+    useForgotOtpMutation,
+    useResendOtpMutation
 } = apiSlice;
 
 export default apiSlice;

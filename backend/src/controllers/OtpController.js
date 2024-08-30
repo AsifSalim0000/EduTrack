@@ -40,6 +40,33 @@ const sendOtp = async (req, res) => {
     }
 };
 
+const forgotOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+        
+        if (!user){
+            res.status(400).json({ error: `User Doesn't Exists` });
+        }   
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
+
+        req.session.otp = otp;
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Your OTP Code For Resetting Password',
+            text: `Your OTP code is ${otp} `,
+        });
+
+        res.status(200).json({ message: 'OTP sent successfully' });
+    } catch (error) {
+        console.error('Error sending OTP:', error);
+        res.status(500).json({ error: 'Server Error' });
+    }
+};
+
 const verifyOtpHandler = async (req, res) => {
     try {
         const result = await verifyOtp(req);
@@ -58,4 +85,4 @@ const verifyOtpHandler = async (req, res) => {
     }
 };
 
-export { sendOtp, verifyOtpHandler };
+export { sendOtp, verifyOtpHandler,forgotOtp };
