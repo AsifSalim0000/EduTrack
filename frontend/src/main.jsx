@@ -20,7 +20,7 @@ const router = createBrowserRouter(
     <Route path="/" element={<App />}>
       <Route index element={<HomePage />} />
       <Route path="register" element={<RegisterForm />} />
-      <Route path="otp-page" element={<OtpPage />} />
+      <Route path="verify-otp" element={<OtpPage />} />
     </Route>
   )
 );

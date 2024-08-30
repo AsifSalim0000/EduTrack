@@ -1,12 +1,15 @@
 import User from '../domain/User.js';
 
-const createUser = async (userData) => {
-    const user = new User(userData);
-    return await user.save();
+const createUser = async ({ email, username, password }) => {
+    const newUser = new User({ email, username, password });
+    await newUser.save();
+    return newUser;
 };
 
-const getUserByUsername = async (username) => {
-    return await User.findOne({ username });
-};
+const findByEmail = async (email) => {
+    return await User.findOne({ email });
+  };
 
-export { createUser, getUserByUsername };
+export { findByEmail,createUser };
+
+

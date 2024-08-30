@@ -15,12 +15,17 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ["Student", "Instructor", "Admin"],
+        enum: ["Student", "Instructor"],
     },
     createdAt: {
         type: Date,
         default: Date.now,
     },
+    isAdmin: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
 });
 
 export default mongoose.model('User', UserSchema);

@@ -1,7 +1,17 @@
-import { createUser } from '../repositories/UserRepository.js';
+import {findByEmail} from '../repositories/UserRepository.js';
+import bcrypt from 'bcryptjs';
 
-export const registerUser = async (userData) => {
-    return await createUser(userData);
+const loginUser = async (email, password) => {
+
+  const user = await findByEmail(email);
+
+  if (user && (await bcrypt.compare(password, user.password))) {
+    return user;
+  } else {
+    throw new Error('Invalid email or password');
+  }
 };
 
-
+export default {
+  loginUser,
+};

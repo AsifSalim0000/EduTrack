@@ -1,24 +1,30 @@
-import Otp from '../domain/Otp.js';
-import User from '../domain/User.js';
+// usecases/VerifyOtp.js
 
-export const createOtp = async (userId) => {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit OTP
-    const otpRecord = new Otp({ userId, otp });
-    await otpRecord.save();
-    return otp; // Return the OTP to send to the user
-};
+import { createUser } from '../repositories/UserRepository.js';
 
-export const getOtpFromDatabase = async (userId, otp) => {
-    return await Otp.findOne({ userId, otp, isValid: true });
-};
+const verifyOtp = async (req) => {
+    const { otp } = req.body;
+    const otpValue = typeof otp === 'object' ? otp.otp : otp;
 
-export const verifyOtpInDatabase = async (userId, otp) => {
-    const otpRecord = await getOtpFromDatabase(userId, otp);
-    if (otpRecord) {
-        otpRecord.isValid = false; // Mark OTP as used
-        await otpRecord.save();
-        return { success: true };
+    if (req.session.otp === otpValue) {
+        req.session.otp = null;
+        const { email, username, password } = req.session.userData;
+
+        const newUser = await createUser({ email, username, password });
+
+        return {
+            success: true,
+            user: {
+                id: newUser._id,
+                email: newUser.email,
+                username: newUser.username,
+            },
+            message: 'User registered successfully'
+        };
     } else {
-        throw new Error('Invalid OTP');
+        console.error('Invalid OTP:', req.session.otp, otp, otpValue);
+        return { success: false, error: 'Invalid OTP' };
     }
 };
+
+export { verifyOtp };

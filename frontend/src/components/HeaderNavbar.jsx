@@ -1,18 +1,22 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLogoutUserMutation } from '../store/userApiSlice';
+import { logout } from '../store/authSlice';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const HeaderNavbar = () => {
-    const user = useSelector((state) => state.user);
-    const [logout] = useLogoutUserMutation();
+    const { userInfo } = useSelector((state) => state.auth);
+    const [logoutApiCall] = useLogoutUserMutation();
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const handleLogout = async (e) => {
         e.preventDefault();
-        await logout();
-        window.location.href = '/';
+        await logoutApiCall().unwrap();
+        dispatch(logout());
+        navigate('/');
     };
 
     return (
@@ -54,16 +58,16 @@ const HeaderNavbar = () => {
                         </button>
                     </form>
                     <ul className="navbar-nav ms-3">
-                        {user ? (
+                        {userInfo ? (
                             <>
                                 <li className="nav-item">
-                                    <a 
+                                    <button 
                                         className="nav-link" 
-                                        href="#" 
+                                         
                                         onClick={handleLogout}
                                     >
                                         Logout
-                                    </a>
+                                    </button>
                                 </li>
                                 <li className="nav-item">
                                     <Link className="nav-link" to="/cart">

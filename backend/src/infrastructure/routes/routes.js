@@ -1,16 +1,12 @@
 import express from 'express';
-import { register } from '../../controllers/UserController.js';
-import { sendOtp, verifyOtp } from '../../controllers/OtpController.js';
-import { home, otpPage, registerForm } from '../../controllers/PageController.js';
-import { protect } from '../../middlewares/authMiddleware.js'; 
+import { logoutUser,loginUser } from '../../controllers/UserController.js';
+import { sendOtp, verifyOtpHandler } from '../../controllers/OtpController.js';
 
 const router = express.Router();
 
-router.get('/home', protect, home);
-router.get('/register-form', protect, registerForm);
-router.get('/otp-page', protect, otpPage);
 router.post('/send-otp', sendOtp);
-router.post('/verify-otp', verifyOtp);
-router.post('/register', register);
+router.post('/verify-otp', verifyOtpHandler);
+router.post('/login', loginUser);
+router.post('/logout', logoutUser);
 
 export default router;

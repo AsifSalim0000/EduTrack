@@ -1,30 +1,30 @@
-import React, { useState } from 'react';
-import { useSendOtpMutation, useVerifyOtpMutation } from '../store/otpApiSlice';
+import React, { useState,useEffect } from 'react';
+import { useVerifyOtpMutation } from '../store/userApiSlice';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCredentials } from '../store/authSlice';
 
-const OtpPage = () => {
-    const [sendOtp] = useSendOtpMutation();
+const otpPage = () => {
     const [verifyOtp] = useVerifyOtpMutation();
-    const navigate = useNavigate();
-    const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
-    const [isOtpSent, setIsOtpSent] = useState(false);
     const [error, setError] = useState(null);
+    const navigate= useNavigate();
+    const dispatch=useDispatch();
 
-    const handleSendOtp = async () => {
-        try {
-            await sendOtp(email).unwrap();
-            setIsOtpSent(true);
-        } catch (err) {
-            setError(err.data?.error || 'An error occurred');
-        }
-    };
+    const { userInfo } = useSelector((state) => state.auth);
 
-    const handleVerifyOtp = async () => {
+    useEffect(() => {
+      if (userInfo) {
+        navigate('/');
+      }
+    }, [navigate, userInfo]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
-            const response = await verifyOtp({ otp }).unwrap();
-            localStorage.setItem('token', response.token); // Store JWT token
-            navigate('/register-form');
+            const res =await verifyOtp({ otp }).unwrap();
+            dispatch(setCredentials({ ...res }));
+            navigate('/'); 
         } catch (err) {
             setError(err.data?.error || 'Invalid OTP');
         }
@@ -32,41 +32,25 @@ const OtpPage = () => {
 
     return (
         <div className="container">
-            <h2>OTP Page</h2>
+            <h2>Verify OTP</h2>
             {error && <div className="alert alert-danger">{error}</div>}
-            {!isOtpSent ? (
-                <>
-                    <div className="form-group">
-                        <label htmlFor="email">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="form-control"
-                            required
-                        />
-                    </div>
-                    <button onClick={handleSendOtp} className="btn btn-primary">Send OTP</button>
-                </>
-            ) : (
-                <>
-                    <div className="form-group">
-                        <label htmlFor="otp">OTP</label>
-                        <input
-                            type="text"
-                            id="otp"
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value)}
-                            className="form-control"
-                            required
-                        />
-                    </div>
-                    <button onClick={handleVerifyOtp} className="btn btn-primary">Verify OTP</button>
-                </>
-            )}
+            <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                    <label htmlFor="otp">OTP</label>
+                    <input
+                        type="text"
+                        id="otp"
+                        name="otp"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        className="form-control"
+                        required
+                    />
+                </div>
+                <button type="submit" className="btn btn-primary">Verify</button>
+            </form>
         </div>
     );
 };
 
-export default OtpPage;
+export default otpPage;

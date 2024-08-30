@@ -1,23 +1,35 @@
-import User from '../domain/User.js';
 import jwt from 'jsonwebtoken';
+import UserManagement from '../usecases/UserManagement.js';
 
-const register = async (req, res) => {
+const loginUser = async (req, res) => {
+    const { email, password } = req.body;
+  
     try {
-        const { username, email, password, token } = req.body;
-
-        // Verify JWT token from OTP verification
-        jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
-            if (err) return res.status(403).json({ error: 'Invalid or expired token' });
-
-            const newUser = new User({ username, email, password });
-            await newUser.save();
-
-            res.status(201).json(newUser);
+      const user = await UserManagement.loginUser(email, password);
+  
+      if (user) {
+        generateToken(res, user._id);
+  
+        res.status(200).json({
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          isAdmin: user.isAdmin,
         });
-    } catch (error) {
-        console.error('Error registering user:', error);
-        res.status(500).json({ error: 'Server Error' });
+      } else {
+        res.status(401).json({ message: 'Invalid email or password' });
+      }
+    } catch (err) {
+      res.status(500).json({ message: err.message });
     }
-};
+  };
+  
+const logoutUser = (req, res) => {
+    res.cookie('jwt', '', {
+      httpOnly: true,
+      expires: new Date(0),
+    });
+    res.status(200).json({ message: 'Logged out successfully' });
+  };
 
-export { register };
+export { logoutUser ,loginUser};

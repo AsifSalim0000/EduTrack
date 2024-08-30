@@ -1,26 +1,30 @@
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import User from '../domain/User.js';
+import generateToken from '../utils/generateToken.js';
+import { verifyOtp } from '../usecases/VerifyOtp.js';
 
 const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: 'asifsalim0000@gmail.com',
+        pass:'gugg uwsw dsnv wzjk',
     },
 });
 
 const sendOtp = async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email, username, password } = req.body;
         const user = await User.findOne({ email });
+        
+        if (user){
+            res.status(400).json({ error: 'User Already Exists' });
+        }   
 
-        if (!user) return res.status(400).json({ error: 'User not found' });
-
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
 
         req.session.otp = otp;
-        req.session.userId = user._id;
+        req.session.userData = { email, username, password };
 
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
@@ -36,21 +40,17 @@ const sendOtp = async (req, res) => {
     }
 };
 
-const verifyOtp = async (req, res) => {
+const verifyOtpHandler = async (req, res) => {
     try {
-        const { otp } = req.body;
+        const result = await verifyOtp(req);
 
-        if (req.session.otp === otp) {
-            req.session.otp = null; // Clear OTP from session
-
-            const user = await User.findById(req.session.userId);
-            if (!user) return res.status(400).json({ error: 'User not found' });
-
-            const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-            res.status(200).json({ token });
+        if (result.success) {
+            generateToken(res, result.user.id);
+            res.status(201).json({
+                _id: result.user.id, username: result.user.username, email: result.user.email
+            });
         } else {
-            res.status(400).json({ error: 'Invalid OTP' });
+            res.status(400).json({ error: result.error });
         }
     } catch (error) {
         console.error('Error verifying OTP:', error);
@@ -58,4 +58,4 @@ const verifyOtp = async (req, res) => {
     }
 };
 
-export { sendOtp, verifyOtp };
+export { sendOtp, verifyOtpHandler };

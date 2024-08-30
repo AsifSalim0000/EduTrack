@@ -1,12 +1,26 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const userApiSlice = createApi({
-    reducerPath: 'userApi',
+const apiSlice = createApi({
+    reducerPath: 'api',
     baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
     endpoints: (builder) => ({
-        registerUser: builder.mutation({
+        sendOtp: builder.mutation({
+            query: (formData) => ({
+                url: '/send-otp',
+                method: 'POST',
+                body: formData,  
+            }),
+        }),
+        verifyOtp: builder.mutation({
+            query: (otp) => ({
+                url: '/verify-otp',
+                method: 'POST',
+                body: { otp },
+            }),
+        }),
+        loginUser: builder.mutation({
             query: (userData) => ({
-                url: '/register',
+                url: '/login',
                 method: 'POST',
                 body: userData,
             }),
@@ -20,5 +34,11 @@ const userApiSlice = createApi({
     }),
 });
 
-export const { useRegisterUserMutation, useLogoutUserMutation } = userApiSlice;
-export default userApiSlice;
+export const {
+    useSendOtpMutation,
+    useVerifyOtpMutation,
+    useLoginUserMutation,
+    useLogoutUserMutation,
+} = apiSlice;
+
+export default apiSlice;
