@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import User from '../domain/User.js';
 import generateToken from '../utils/generateToken.js';
-import { verifyOtp } from '../usecases/VerifyOtp.js';
+import { verifyForgotOtp, verifyOtp } from '../usecases/VerifyOtp.js';
 
 const transporter = nodemailer.createTransport({
     service: 'Gmail',
@@ -51,7 +51,8 @@ const forgotOtp = async (req, res) => {
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
 
-        req.session.otp = otp;
+        req.session.forgototp = otp;
+        req.session.email = email;
 
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
@@ -84,5 +85,21 @@ const verifyOtpHandler = async (req, res) => {
         res.status(500).json({ error: 'Server Error' });
     }
 };
+const verifyForgotOtpHandler = async (req, res) => {
+    try {
+        const result = await verifyForgotOtp(req);
 
-export { sendOtp, verifyOtpHandler,forgotOtp };
+        if (result.success) {
+            res.status(201).json({
+               message:"Password Reseted Successfully"
+            });
+        } else {
+            res.status(400).json({ error: result.error });
+        }
+    } catch (error) {
+        console.error('Error verifying OTP:', error);
+        res.status(500).json({ error: 'Server Error' });
+    }
+};
+
+export { sendOtp, verifyOtpHandler,forgotOtp,verifyForgotOtpHandler };

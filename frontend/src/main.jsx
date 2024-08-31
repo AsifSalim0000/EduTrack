@@ -18,6 +18,7 @@ import LoginForm from './pages/LoginForm';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ForgotPasswordEmailForm from './pages/ForgotPasswordEmailForm';
 import ForgotPasswordOtp from './pages/ForgotPasswordOtp';
+import ResetPassword from './pages/ResetPassword';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -28,6 +29,7 @@ const router = createBrowserRouter(
       <Route path="verify-otp" element={<OtpPage />} />
       <Route path="forgot-password" element={<ForgotPasswordEmailForm />} />
       <Route path="forgotpassword-otp" element={<ForgotPasswordOtp />} />
+      <Route path="reset-password" element={<ResetPassword />} />
     </Route>
   )
 );

@@ -26,5 +26,20 @@ const verifyOtp = async (req) => {
         return { success: false, error: 'Invalid OTP' };
     }
 };
+const verifyForgotOtp = async (req) => {
+    const { otp } = req.body;
+    const otpValue = typeof otp === 'object' ? otp.otp : otp;
+    
+    if (req.session.forgototp == otpValue) {
+        
+        return {
+            success: true,
+            message: 'User registered successfully'
+        };
+    } else {
+        console.error('Invalid OTP1:', req.session.forgototp, otpValue);
+        return { success: false, error: 'Invalid OTP' };
+    }
+};
 
-export { verifyOtp };
+export { verifyOtp ,verifyForgotOtp};

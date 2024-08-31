@@ -8,7 +8,7 @@ const apiSlice = createApi({
             query: (formData) => ({
                 url: '/send-otp',
                 method: 'POST',
-                body: formData,  
+                body: formData,
             }),
         }),
         verifyOtp: builder.mutation({
@@ -42,13 +42,27 @@ const apiSlice = createApi({
             query: (email) => ({
                 url: '/forgot-otp',
                 method: 'POST',
-                body: email,  
+                body: email,
             }),
         }),
         resendOtp: builder.mutation({
             query: () => ({
                 url: '/logout',
                 method: 'POST',
+            }),
+        }),
+        resetPassword: builder.mutation({
+            query: (newPassword) => ({
+                url: '/reset-password',
+                method: 'POST',
+                body: { newPassword },
+            }),
+        }),
+        verifyForgotOtp: builder.mutation({
+            query: (otp) => ({
+                url: '/verify-forgototp',
+                method: 'POST',
+                body: { otp },
             }),
         }),
     }),
@@ -61,7 +75,9 @@ export const {
     useLogoutUserMutation,
     useGoogleAuthMutation,
     useForgotOtpMutation,
-    useResendOtpMutation
+    useResendOtpMutation,
+    useResetPasswordMutation,
+    useVerifyForgotOtpMutation, 
 } = apiSlice;
 
 export default apiSlice;

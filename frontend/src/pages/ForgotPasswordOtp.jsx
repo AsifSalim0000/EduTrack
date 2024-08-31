@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useVerifyOtpMutation, useResendOtpMutation } from '../store/userApiSlice';
+import { useVerifyForgotOtpMutation, useResendOtpMutation } from '../store/userApiSlice';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { setCredentials } from '../store/authSlice';
+import {useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import emaillogo from '../assets/download.png';
 
 
@@ -11,10 +11,9 @@ const ForgotPasswordOtp = () => {
     const [error, setError] = useState(null);
     const [timer, setTimer] = useState(30);
     const [showResend, setShowResend] = useState(false);
-    const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
+    const [verifyOtp, { isLoading }] = useVerifyForgotOtpMutation();
     const [resendOtp, { isLoading: resendLoading }] = useResendOtpMutation();
     const navigate = useNavigate();
-    const dispatch = useDispatch();
     const { userInfo } = useSelector((state) => state.auth);
 
     useEffect(() => {
@@ -35,12 +34,11 @@ const ForgotPasswordOtp = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await verifyOtp({ otp }).unwrap();
-            dispatch(setCredentials({ ...res }));
+            const result = await verifyOtp({ otp }).unwrap();
             toast.success('OTP Verified! Redirecting to reset password...');
             navigate('/reset-password');
         } catch (err) {
-            setError(err.data?.error || 'Invalid OTP');
+            setError(err.data?.error || 'Invalide OTP');
         }
     };
 
