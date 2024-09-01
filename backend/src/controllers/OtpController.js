@@ -1,105 +1,77 @@
-import jwt from 'jsonwebtoken';
+import asyncHandler from 'express-async-handler';
 import nodemailer from 'nodemailer';
 import User from '../domain/User.js';
 import generateToken from '../utils/generateToken.js';
 import { verifyForgotOtp, verifyOtp } from '../usecases/VerifyOtp.js';
 
 const transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-        user: 'asifsalim0000@gmail.com',
-        pass:'gugg uwsw dsnv wzjk',
-    },
+  service: 'Gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
-const sendOtp = async (req, res) => {
-    try {
-        const { email, username, password } = req.body;
-        const user = await User.findOne({ email });
-        
-        if (user){
-            res.status(400).json({ error: 'User Already Exists' });
-        }   
+const sendOtp = asyncHandler(async (req, res) => {
+  const { email, username, password } = req.body;
+  const user = await User.findOne({ email });
+  if (user) {
+    return res.status(400).json({ error: 'User Already Exists' });
+  }
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  req.session.otp = otp;
+  req.session.userData = { email, username, password };
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Your OTP Code',
+    text: `Your OTP code is ${otp}`,
+  });
+  res.status(200).json({ message: 'OTP sent successfully' });
+});
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
+const forgotOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({ error: `User Doesn't Exist` });
+  }
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  req.session.forgototp = otp;
+  req.session.email = email;
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Your OTP Code For Resetting Password',
+    text: `Your OTP code is ${otp}`,
+  });
+  res.status(200).json({ message: 'OTP sent successfully' });
+});
 
-        req.session.otp = otp;
-        req.session.userData = { email, username, password };
+const verifyOtpHandler = asyncHandler(async (req, res) => {
+  const result = await verifyOtp(req);
+  if (result.success) {
+    generateToken(res, result.user.id);
+    res.status(201).json({
+      _id: result.user.id,
+      username: result.user.username,
+      email: result.user.email,
+      role: result.user.role,
+    });
+  } else {
+    res.status(400).json({ error: result.error });
+  }
+});
 
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'Your OTP Code',
-            text: `Your OTP code is ${otp}`,
-        });
+const verifyForgotOtpHandler = asyncHandler(async (req, res) => {
+  const result = await verifyForgotOtp(req);
+  if (result.success) {
+    res.status(201).json({
+      message: "Password Reset Successfully",
+    });
+  } else {
+    res.status(400).json({ error: result.error });
+  }
+});
 
-        res.status(200).json({ message: 'OTP sent successfully' });
-    } catch (error) {
-        console.error('Error sending OTP:', error);
-        res.status(500).json({ error: 'Server Error' });
-    }
-};
-
-const forgotOtp = async (req, res) => {
-    try {
-        const { email } = req.body;
-        const user = await User.findOne({ email });
-        
-        if (!user){
-            res.status(400).json({ error: `User Doesn't Exists` });
-        }   
-
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
-
-        req.session.forgototp = otp;
-        req.session.email = email;
-
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'Your OTP Code For Resetting Password',
-            text: `Your OTP code is ${otp} `,
-        });
-
-        res.status(200).json({ message: 'OTP sent successfully' });
-    } catch (error) {
-        console.error('Error sending OTP:', error);
-        res.status(500).json({ error: 'Server Error' });
-    }
-};
-
-const verifyOtpHandler = async (req, res) => {
-    try {
-        const result = await verifyOtp(req);
-
-        if (result.success) {
-            generateToken(res, result.user.id);
-            res.status(201).json({
-                _id: result.user.id, username: result.user.username, email: result.user.email
-            });
-        } else {
-            res.status(400).json({ error: result.error });
-        }
-    } catch (error) {
-        console.error('Error verifying OTP:', error);
-        res.status(500).json({ error: 'Server Error' });
-    }
-};
-const verifyForgotOtpHandler = async (req, res) => {
-    try {
-        const result = await verifyForgotOtp(req);
-
-        if (result.success) {
-            res.status(201).json({
-               message:"Password Reseted Successfully"
-            });
-        } else {
-            res.status(400).json({ error: result.error });
-        }
-    } catch (error) {
-        console.error('Error verifying OTP:', error);
-        res.status(500).json({ error: 'Server Error' });
-    }
-};
-
-export { sendOtp, verifyOtpHandler,forgotOtp,verifyForgotOtpHandler };
+export { sendOtp, verifyOtpHandler, forgotOtp, verifyForgotOtpHandler };

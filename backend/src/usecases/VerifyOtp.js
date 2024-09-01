@@ -18,6 +18,7 @@ const verifyOtp = async (req) => {
                 id: newUser._id,
                 email: newUser.email,
                 username: newUser.username,
+                role: newUser.role,
             },
             message: 'User registered successfully'
         };
@@ -31,7 +32,7 @@ const verifyForgotOtp = async (req) => {
     const otpValue = typeof otp === 'object' ? otp.otp : otp;
     
     if (req.session.forgototp == otpValue) {
-        
+        req.session.forgototp = null;
         return {
             success: true,
             message: 'User registered successfully'

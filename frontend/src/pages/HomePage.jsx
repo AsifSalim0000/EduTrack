@@ -1,10 +1,15 @@
 import React from 'react';
+import HeroSection from '../components/HeroSection'
+import NewCourses from '../components/NewCourses'
+import Footer from '../components/Footer'
+
 
 const HomePage = () => {
   return (
     <div>
-      <h1>Welcome to EduTrack</h1>
-      <p>Your gateway to quality education.</p>
+      <HeroSection/>
+      <NewCourses />
+      <Footer />
     </div>
   );
 };

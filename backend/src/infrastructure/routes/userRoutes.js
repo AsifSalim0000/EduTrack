@@ -1,6 +1,8 @@
 import express from 'express';
-import { logoutUser,loginUser,googleAuthHandler } from '../../controllers/UserController.js';
+import { logoutUser,loginUser,googleAuthHandler, resetPasswordHandler } from '../../controllers/UserController.js';
 import { forgotOtp, sendOtp, verifyForgotOtpHandler, verifyOtpHandler } from '../../controllers/OtpController.js';
+import { protect } from '../../middlewares/authMiddleware.js';
+import { handleCreateInstructor } from '../../controllers/InstructorController.js';
 
 const router = express.Router();
 
@@ -11,7 +13,8 @@ router.post('/google-auth', googleAuthHandler);
 router.post('/forgot-otp', forgotOtp);
 router.post('/verify-forgototp', verifyForgotOtpHandler);
 router.post('/logout', logoutUser);
-
+router.post('/reset-password', resetPasswordHandler);
+router.post('/create-instructor',protect,  handleCreateInstructor);
 
 
 export default router;

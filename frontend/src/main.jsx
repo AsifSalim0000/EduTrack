@@ -19,28 +19,56 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import ForgotPasswordEmailForm from './pages/ForgotPasswordEmailForm';
 import ForgotPasswordOtp from './pages/ForgotPasswordOtp';
 import ResetPassword from './pages/ResetPassword';
+import NotFoundPage from './pages/NotFoundPage';
+import ProtectedRoute from './components/ProtectedRoute'; 
+import InstructorLayout from './components/instructor/InstructorLayout';
+import InstructorDashboard from './pages/instructor/InstructorDashboard';
+import BecomeTeacherForm from './pages/instructor/BecomeTeacherForm';
+import AdminRoute from './components/admin/AdminRoute';
+import AdminLayout from './components/admin/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminTeachers from './pages/admin/AdminTeachers';
+import AdminStudents from './pages/admin/AdminStudents';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/" element={<App />}>
-      <Route index element={<HomePage />} />
-      <Route path="register" element={<RegisterForm />} />
-      <Route path="login" element={<LoginForm />} />
-      <Route path="verify-otp" element={<OtpPage />} />
-      <Route path="forgot-password" element={<ForgotPasswordEmailForm />} />
-      <Route path="forgotpassword-otp" element={<ForgotPasswordOtp />} />
-      <Route path="reset-password" element={<ResetPassword />} />
+    <>
+      {/* Public Routes */}
+      <Route path="/" element={<App />}>
+        <Route index element={<HomePage />} />
+        <Route path="register" element={<RegisterForm />} />
+        <Route path="login" element={<LoginForm />} />
+        <Route path="verify-otp" element={<OtpPage />} />
+        <Route path="forgot-password" element={<ForgotPasswordEmailForm />} />
+        <Route path="forgotpassword-otp" element={<ForgotPasswordOtp />} />
+        <Route path="reset-password" element={<ResetPassword />} />
+        <Route path="become-a-tutor" element={<BecomeTeacherForm />} />
+      </Route>
+
+      
+      <Route element={<ProtectedRoute allowedRole="Instructor" />}>
+        <Route path="/instructor" element={<InstructorLayout activeItem="dashboard" />}>
+          <Route path="dashboard" element={<InstructorDashboard />} />
+        </Route>
+      </Route>
+      <Route path="/admin/*" element={<AdminRoute />}>
+      <Route element={<AdminLayout />}>
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="instructors" element={<AdminTeachers />} />
+        <Route path="students" element={<AdminStudents />} />
+      </Route>
     </Route>
+      <Route path="*" element={<NotFoundPage />} />
+    </>
   )
 );
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <Provider store={store}>
     <GoogleOAuthProvider clientId="665572429672-6qkq3k127fei6lg22d65k5dgd8cjduh1.apps.googleusercontent.com">
-     <React.StrictMode>
-      <RouterProvider router={router} />
-    </React.StrictMode>
+      <React.StrictMode>
+        <RouterProvider router={router} />
+      </React.StrictMode>
     </GoogleOAuthProvider>
-
   </Provider>
 );

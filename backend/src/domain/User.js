@@ -16,6 +16,7 @@ const UserSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: ["Student", "Instructor"],
+        default: "Student"
     },
     createdAt: {
         type: Date,
@@ -23,9 +24,17 @@ const UserSchema = new mongoose.Schema({
     },
     isAdmin: {
         type: Boolean,
-        required: true,
         default: false,
       },
+    status: {
+        type:String,
+        default: "active"
+    },
+      plan: {
+        type: String,
+        default: "None",
+      },
+
 });
 
 export default mongoose.model('User', UserSchema);

@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import FormContainer from '../components/FormContainer';
 import Loader from '../components/Loader';
 import { useResetPasswordMutation } from '../store/userApiSlice';
+import { useSelector } from 'react-redux';
+
 
 const ResetPassword = () => {
   const [formData, setFormData] = useState({ newPassword: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [resetPassword, { isLoading }] = useResetPasswordMutation();
   const navigate = useNavigate();
+  const { userInfo } = useSelector((state) => state.auth);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,6 +22,11 @@ const ResetPassword = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+  useEffect(() => {
+    if (userInfo) {
+      navigate('/');
+    }
+  }, [navigate, userInfo]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +44,7 @@ const ResetPassword = () => {
     }
 
     try {
-      await resetPassword({ newPassword }).unwrap();
+      await resetPassword( newPassword );
       toast.success('Password reset successfully');
       navigate('/login');
     } catch (err) {

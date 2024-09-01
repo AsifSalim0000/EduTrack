@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { useForgotOtpMutation } from '../store/userApiSlice';
 import { toast } from 'react-toastify';
 import FormContainer from '../components/FormContainer';
 import Loader from '../components/Loader';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const ForgotPasswordEmailForm = () => {
   const [email, setEmail] = useState('');
   const [sendOtp, { isLoading }] = useForgotOtpMutation();
-  const navigate= useNavigate();
+  const { userInfo } = useSelector((state) => state.auth);
+  
+const navigate= useNavigate();
+
+useEffect(() => {
+  if (userInfo) {
+    navigate('/');
+  }
+}, [navigate, userInfo]);
   const handleSubmit = async (e) => {
     e.preventDefault();
 

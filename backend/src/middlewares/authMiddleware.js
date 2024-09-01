@@ -6,13 +6,13 @@ const protect = asyncHandler(async (req, res, next) => {
   let token;
 
   if (req.cookies.jwt) {
-    // Get token from cookies
+
     token = req.cookies.jwt;
   } else if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
-    // Get token from header
+   
     token = req.headers.authorization.split(' ')[1];
   }
 
@@ -33,6 +33,7 @@ const protect = asyncHandler(async (req, res, next) => {
     throw new Error('Not authorized, no token');
   }
 });
+
 
 const admin = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
