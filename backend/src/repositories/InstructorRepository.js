@@ -38,9 +38,15 @@ const createInstructor = asyncHandler(async (instructorData, token) => {
       if (existingInstructor) {
         throw new Error('Instructor profile already exists');
       }
+    }
+    if (user.role === "RequestForInstructor") {
+      const existingInstructor = await Instructor.findOne({ userId });
+      if (existingInstructor) {
+        throw new Error('Already requested for Instructor');
+      }
     } else {
       
-      user.role = "Instructor";
+      user.role = "RequestForInstructor";
       await user.save();
     }
 

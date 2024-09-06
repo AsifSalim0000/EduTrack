@@ -22,7 +22,6 @@ const app = express();
 dotenv.config();
 connectDB();
 
-// Middleware
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
@@ -36,7 +35,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false, 
     cookie: {
-        maxAge: 3600000, // 1 hour
+        maxAge: 3600000,
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict'

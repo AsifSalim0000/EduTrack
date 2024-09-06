@@ -7,8 +7,8 @@ import { verifyForgotOtp, verifyOtp } from '../usecases/VerifyOtp.js';
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: "asifsalim0000@gmail.com",
+    pass: 'gugg uwsw dsnv wzjk',
   },
 });
 
@@ -74,4 +74,29 @@ const verifyForgotOtpHandler = asyncHandler(async (req, res) => {
   }
 });
 
-export { sendOtp, verifyOtpHandler, forgotOtp, verifyForgotOtpHandler };
+const resendOtp = asyncHandler(async (req, res) => {
+  let otp;
+  let email;
+  if (req.session.forgototp) {
+    
+    otp = req.session.forgototp;
+    email = req.session.email;
+  } else if (req.session.otp) {
+    
+    otp = req.session.otp;
+    email = req.session.userData.email;
+  } else {
+    return res.status(400).json({ error: 'No OTP session found' });
+  }
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Your OTP Code',
+    text: `Your OTP code is ${otp}`,
+  });
+
+  res.status(200).json({ message: 'OTP resent successfully' });
+});
+
+export { sendOtp, verifyOtpHandler, forgotOtp, verifyForgotOtpHandler,resendOtp };

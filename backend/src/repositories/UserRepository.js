@@ -13,7 +13,8 @@ const createUser = asyncHandler(async ({ email, username, password }) => {
 });
 
 const findByEmail = asyncHandler(async (email) => {
-  return await User.findOne({ email });
+  const user=await User.findOne({ email });
+  return user
 });
 
 const resetPassword = asyncHandler(async (email, newPassword) => {
@@ -33,8 +34,11 @@ const resetPassword = asyncHandler(async (email, newPassword) => {
 });
 
 const findUserById = async (userId) => {
-  const user=  await User.findById(userId)
-  return user;
+  try {
+    return await User.findById(userId);
+  } catch (error) {
+    throw new Error('Error finding user');
+  }
 };
 
 const findPaginatedUsers = async (query, page, limit) => {

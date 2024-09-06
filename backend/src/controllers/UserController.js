@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import UserManagement from '../usecases/UserManagement.js';
 import generateToken from '../utils/generateToken.js';
 import { verifyGoogleToken } from '../usecases/VerifyGoogleToken.js';
-import { findByEmail, createUser, resetPassword } from '../repositories/UserRepository.js';
+import { findByEmail, createUser, resetPassword,findUserById } from '../repositories/UserRepository.js';
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -22,10 +22,10 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-const googleAuthHandler = async (req, res) => {
+const googleAuthHandler = asyncHandler(async (req, res) => {
   const { token } = req.body;
   const googleUser = await verifyGoogleToken(token);
-  let user = await findByEmail(googleUser.email);
+  let user = findByEmail(googleUser.email);
   if (!user) {
     user = await createUser({
       email: googleUser.email,
@@ -33,18 +33,21 @@ const googleAuthHandler = async (req, res) => {
       password: '123456',
     });
   }
+
   generateToken(res, user._id);
+  const User= await findByEmail(googleUser.email);
+  console.log(User)
   
   res.json({
-    user: {
-      email: user.email,
-      _id: user._id,
-      username: user.username,
-      role: user.role,
-      isAdmin: user.isAdmin,
-    },
+  
+      email: User.email,
+      _id: User._id,
+      username: User.username,
+      role: User.role,
+      isAdmin: User.isAdmin,
+
   });
-};
+});
 
 const logoutUser = asyncHandler(async (req, res) => {
   res.cookie('jwt', '', {
@@ -64,5 +67,26 @@ const resetPasswordHandler = asyncHandler(async (req, res) => {
     res.status(404).json({ message: 'User not found' });
   }
 });
+const getUserStatus = async (req, res) => {
+  try{
+  const token = req.cookies.jwt;
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const user = await findUserById(decoded.userId);
+ 
+  if (user) {
+    if (user.status === 'blocked') {
+      
+      res.clearCookie('jwt', { httpOnly: true, secure: process.env.NODE_ENV !== 'development', sameSite: 'strict' });
+    }
+    
+    return res.json({ status: user.status });
+  } else {
+    return res.status(404).json({ message: 'User not found' });
+  }
+} catch (error) {
+  console.error(error);
+  return res.status(500).json({ message: 'Server error' });
+}
+};
 
-export { logoutUser, loginUser, googleAuthHandler, resetPasswordHandler };
+export { logoutUser, loginUser, googleAuthHandler, resetPasswordHandler,getUserStatus };

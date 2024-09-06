@@ -1,6 +1,6 @@
 import express from 'express';
-import { logoutUser,loginUser,googleAuthHandler, resetPasswordHandler } from '../../controllers/UserController.js';
-import { forgotOtp, sendOtp, verifyForgotOtpHandler, verifyOtpHandler } from '../../controllers/OtpController.js';
+import { logoutUser,loginUser,googleAuthHandler, resetPasswordHandler, getUserStatus } from '../../controllers/UserController.js';
+import { forgotOtp, resendOtp, sendOtp, verifyForgotOtpHandler, verifyOtpHandler } from '../../controllers/OtpController.js';
 import { protect } from '../../middlewares/authMiddleware.js';
 import { handleCreateInstructor } from '../../controllers/InstructorController.js';
 
@@ -15,6 +15,7 @@ router.post('/verify-forgototp', verifyForgotOtpHandler);
 router.post('/logout', logoutUser);
 router.post('/reset-password', resetPasswordHandler);
 router.post('/create-instructor',protect,  handleCreateInstructor);
-
+router.post('/resend-otp',  resendOtp);
+router.get('/status', protect,getUserStatus);
 
 export default router;

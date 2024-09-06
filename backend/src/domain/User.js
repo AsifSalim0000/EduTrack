@@ -15,7 +15,7 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ["Student", "Instructor"],
+        enum: ["Student", "Instructor","RequestForInstructor"],
         default: "Student"
     },
     createdAt: {
@@ -30,7 +30,7 @@ const UserSchema = new mongoose.Schema({
         type:String,
         default: "active"
     },
-      plan: {
+    plan: {
         type: String,
         default: "None",
       },
