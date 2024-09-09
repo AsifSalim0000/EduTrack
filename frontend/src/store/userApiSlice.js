@@ -65,6 +65,9 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: { otp },
       }),
     }),
+    getUserStatus: builder.query({
+      query: () => '/user/status',
+    }),
   }),
 });
 
@@ -78,5 +81,6 @@ export const {
   useResendOtpMutation,
   useResetPasswordMutation,
   useVerifyForgotOtpMutation,
+  useGetUserStatusQuery
 } = userApiSlice;
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
-import { useSendOtpMutation,useGoogleAuthMutation } from '../store/userApiSlice';
+import { useSendOtpMutation, useGoogleAuthMutation } from '../store/userApiSlice';
 import { toast } from 'react-toastify';
 import FormContainer from '../components/FormContainer';
 import Loader from '../components/Loader';
@@ -11,11 +11,12 @@ import { GoogleLogin } from '@react-oauth/google';
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({ email: '', username: '', password: '' });
-  const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [error, setError] = useState(null); 
   const [sendOtp, { isLoading }] = useSendOtpMutation();
-  const navigate = useNavigate();
-  const dispatch=useDispatch();
   const [googleAuth, { isLoading: googleLoading }] = useGoogleAuthMutation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -23,9 +24,26 @@ const RegisterForm = () => {
       navigate('/');
     }
   }, [navigate, userInfo]);
-  
+
+  const validatePassword = (password) => {
+    const passwordErrors = [];
+    if (password.length < 8) passwordErrors.push("Password must be at least 8 characters long.");
+    if (!/[A-Z]/.test(password)) passwordErrors.push("Password must contain at least one uppercase letter.");
+    if (!/[a-z]/.test(password)) passwordErrors.push("Password must contain at least one lowercase letter.");
+    if (!/[0-9]/.test(password)) passwordErrors.push("Password must contain at least one digit.");
+    if (!/[^A-Za-z0-9]/.test(password)) passwordErrors.push("Password must contain at least one special character.");
+    
+    return passwordErrors.length ? passwordErrors : null; 
+  };
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    if (name === 'password') {
+      const passwordError = validatePassword(value.trim());
+      setErrors({ ...errors, password: passwordError });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -35,10 +53,20 @@ const RegisterForm = () => {
     const username = formData.username.trim();
     const password = formData.password.trim();
 
-    if (!email || !username || !password) {
-      toast.error('Please fill in all fields correctly.');
+    const newErrors = {
+      email: !email ? 'Email is required' : null,
+      username: !username ? 'Username is required' : null,
+      password: validatePassword(password),
+    };
+
+    setErrors(newErrors);
+
+    const hasErrors = Object.values(newErrors).some((error) => error !== null);
+    if (hasErrors) {
+      toast.error('Please correct the errors in the form.');
       return;
     }
+
     try {
       await sendOtp(formData).unwrap();
       toast.success('OTP sent successfully');
@@ -48,6 +76,7 @@ const RegisterForm = () => {
       setError(err.data?.error || 'An error occurred');
     }
   };
+
   const handleGoogleSuccess = async (response) => {
     try {
       const res = await googleAuth(response.credential).unwrap();
@@ -63,6 +92,7 @@ const RegisterForm = () => {
     console.error(error);
     toast.error('Google sign-in failed');
   };
+
   return (
     <FormContainer>
       <h1 className="mb-4">Create Account</h1>
@@ -77,8 +107,8 @@ const RegisterForm = () => {
             value={formData.email}
             onChange={handleChange}
             className="form-control"
-            required
           />
+          {errors.email && <div className="text-danger">{errors.email}</div>}
         </Form.Group>
 
         <Form.Group className="my-3" controlId="username">
@@ -90,8 +120,8 @@ const RegisterForm = () => {
             value={formData.username}
             onChange={handleChange}
             className="form-control"
-            required
           />
+          {errors.username && <div className="text-danger">{errors.username}</div>}
         </Form.Group>
 
         <Form.Group className="my-3" controlId="password">
@@ -103,11 +133,17 @@ const RegisterForm = () => {
             value={formData.password}
             onChange={handleChange}
             className="form-control"
-            required
           />
+          {errors.password && (
+            <div className="text-danger">
+              {errors.password.map((error, index) => (
+                <div key={index}>{error}</div>
+              ))}
+            </div>
+          )}
         </Form.Group>
 
-        <Button type="submit" variant="primary" className="mt-4 w-100">
+        <Button type="submit" variant="primary" className="mt-4 w-100" disabled={isLoading}>
           Sign Up / Register
         </Button>
 
@@ -122,9 +158,10 @@ const RegisterForm = () => {
           </Link>
         </Col>
       </Row>
+      
       <Row className="py-3">
         <Col className="text-center">
-          <GoogleLogin className='w-100'
+          <GoogleLogin className="w-100"
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleError}
           />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Table, Button, Pagination, FormControl } from 'react-bootstrap';
+import Swal from 'sweetalert2';
 import { useFetchStudentsQuery, useToggleBlockStudentMutation } from '../../store/adminApiSlice';
 
 const AdminStudents = () => {
@@ -9,12 +10,25 @@ const AdminStudents = () => {
   const { data: studentsData, refetch } = useFetchStudentsQuery({ page, limit });
   const [toggleBlockStudent] = useToggleBlockStudentMutation();
 
-  const handleToggleBlock = async (studentId) => {
-    try {
-      await toggleBlockStudent(studentId).unwrap();
-      refetch();  
-    } catch (err) {
-      console.error('Failed to toggle block status: ', err);
+  const handleToggleBlock = async (studentId, currentStatus) => {
+    const action = currentStatus === 'blocked' ? 'Unblock' : 'Block';
+    const result = await Swal.fire({
+      title: `Are you sure you want to ${action} this student?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: `Yes, ${action}`,
+      cancelButtonText: 'Cancel',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await toggleBlockStudent(studentId).unwrap();
+        refetch();
+        Swal.fire(`${action}ed!`, `The student has been ${action.toLowerCase()}ed.`, 'success');
+      } catch (err) {
+        console.error('Failed to toggle block status: ', err);
+        Swal.fire('Error', 'Failed to update the status. Please try again later.', 'error');
+      }
     }
   };
 
@@ -28,8 +42,7 @@ const AdminStudents = () => {
     student.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Pagination controls
-  const totalPages = Math.ceil(studentsData?.totalCount / limit) || 1; // Assuming totalCount is provided by the API
+  const totalPages = Math.ceil(studentsData?.totalCount / limit) || 1;
 
   return (
     <div className="admin-students">
@@ -59,7 +72,7 @@ const AdminStudents = () => {
               <td>
                 <Button
                   variant={student.status === 'blocked' ? 'danger' : 'success'}
-                  onClick={() => handleToggleBlock(student._id)}
+                  onClick={() => handleToggleBlock(student._id, student.status)}
                 >
                   {student.status === 'blocked' ? 'Unblock' : 'Block'}
                 </Button>

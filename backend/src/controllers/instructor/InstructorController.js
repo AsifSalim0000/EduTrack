@@ -1,5 +1,5 @@
 import asyncHandler from 'express-async-handler';
-import { createInstructor } from '../repositories/InstructorRepository.js';
+import { createInstructor } from '../../repositories/InstructorRepository.js';
 
 const handleCreateInstructor = asyncHandler(async (req, res) => {
   const instructorData = req.body;

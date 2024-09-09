@@ -13,7 +13,7 @@ const NotFoundPage = () => {
           <p className="lead">
             Sorry, the page you're looking for doesn't exist.
           </p>
-          <Button as={Link} to="/" variant="primary">
+          <Button as={Link} to="/" variant="primary" className='btnHome'>
             Go Home
           </Button>
         </Col>

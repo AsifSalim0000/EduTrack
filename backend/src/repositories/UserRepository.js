@@ -34,6 +34,7 @@ const resetPassword = asyncHandler(async (email, newPassword) => {
 
 const findUserById = async (userId) => {
   const user=  await User.findById(userId)
+  
   return user;
 };
 

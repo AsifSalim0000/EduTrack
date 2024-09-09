@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
-import hero from "../assets/hero.png";
 import './HeroSection.css';
 
 const HeroSection = () => {

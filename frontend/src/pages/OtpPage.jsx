@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useVerifyOtpMutation } from '../store/userApiSlice';
+import { useVerifyOtpMutation, useResendOtpMutation } from '../store/userApiSlice';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
 import emaillogo from '../assets/download.png';
+import { toast } from 'react-toastify';
 
 const OtpPage = () => {
     const [otp, setOtp] = useState('');
@@ -11,6 +12,7 @@ const OtpPage = () => {
     const [timer, setTimer] = useState(30); 
     const [showResend, setShowResend] = useState(false); 
     const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
+    const [resendOtp, { isLoading: resendLoading }] = useResendOtpMutation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { userInfo } = useSelector((state) => state.auth);
@@ -22,7 +24,6 @@ const OtpPage = () => {
     }, [navigate, userInfo]);
 
     useEffect(() => {
-       
         if (timer > 0) {
             const countdown = setTimeout(() => setTimer(timer - 1), 1000);
             return () => clearTimeout(countdown);
@@ -39,6 +40,18 @@ const OtpPage = () => {
             navigate('/');
         } catch (err) {
             setError(err.data?.error || 'Invalid OTP');
+        }
+    };
+
+    const handleResendOtp = async (e) => {
+        e.preventDefault();
+        try {
+            await resendOtp().unwrap();
+            toast.success('OTP has been resent to your email.');
+            setTimer(30);
+            setShowResend(false);
+        } catch (err) {
+            toast.error('Failed to resend OTP');
         }
     };
 
@@ -70,7 +83,13 @@ const OtpPage = () => {
                         <small>
                             Didn't get the OTP?
                             {showResend ? (
-                                <a href="/resend-otp" id="resendLink" className="text-decoration-none">
+                                <a
+                                    href="#"
+                                    id="resendLink"
+                                    className="text-decoration-none"
+                                    onClick={handleResendOtp}
+                                    disabled={resendLoading}
+                                >
                                     Resend
                                 </a>
                             ) : (

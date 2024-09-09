@@ -11,7 +11,8 @@ import { GoogleLogin } from '@react-oauth/google';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState(null);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [loginUser, { isLoading }] = useLoginUserMutation();
   const [googleAuth, { isLoading: googleLoading }] = useGoogleAuthMutation();
   const navigate = useNavigate();
@@ -28,14 +29,30 @@ const LoginForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validateForm = () => {
+    let isValid = true;
+
+    if (!formData.email.trim()) {
+      setEmailError('Email is required.');
+      isValid = false;
+    } else {
+      setEmailError('');
+    }
+
+    if (!formData.password.trim()) {
+      setPasswordError('Password is required.');
+      isValid = false;
+    } else {
+      setPasswordError('');
+    }
+
+    return isValid;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const email = formData.email.trim();
-    const password = formData.password.trim();
-
-    if (!email || !password) {
-      toast.error('Please fill in all fields correctly.');
+    if (!validateForm()) {
       return;
     }
 
@@ -46,7 +63,6 @@ const LoginForm = () => {
       navigate('/');
     } catch (err) {
       toast.error(err?.data?.message || err.error);
-      setError(err.data?.error || 'An error occurred');
     }
   };
 
@@ -69,7 +85,6 @@ const LoginForm = () => {
   return (
     <FormContainer>
       <h1 className="mb-4">Login</h1>
-      {error && <div className="alert alert-danger">{error}</div>}
       <Form onSubmit={handleSubmit}>
         <Form.Group className="my-3" controlId="email">
           <Form.Label>Email Address</Form.Label>
@@ -80,8 +95,9 @@ const LoginForm = () => {
             value={formData.email}
             onChange={handleChange}
             className="form-control"
-            required
+            isInvalid={!!emailError}
           />
+          {emailError && <Form.Text className="text-danger">{emailError}</Form.Text>}
         </Form.Group>
 
         <Form.Group className="my-3" controlId="password">
@@ -93,8 +109,9 @@ const LoginForm = () => {
             value={formData.password}
             onChange={handleChange}
             className="form-control"
-            required
+            isInvalid={!!passwordError}
           />
+          {passwordError && <Form.Text className="text-danger">{passwordError}</Form.Text>}
         </Form.Group>
 
         <Button type="submit" variant="primary" className="mt-4 w-100" disabled={isLoading}>

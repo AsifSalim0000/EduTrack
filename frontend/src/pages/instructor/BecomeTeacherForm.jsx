@@ -53,7 +53,7 @@ const BecomeTeacherForm = () => {
             
             setSuccessMessage('Instructor profile created successfully!');
             setErrorMessage('');
-            navigate('/instructor/dashboard');
+            navigate('/');
         } catch (error) {
             setErrorMessage(error.data?.message || 'Failed to create instructor profile.');
             setSuccessMessage('');

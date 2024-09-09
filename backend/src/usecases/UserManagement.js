@@ -1,4 +1,4 @@
-import { findByEmail } from '../repositories/UserRepository.js';
+import { findByEmail,findUserById } from '../repositories/UserRepository.js';
 import bcrypt from 'bcryptjs';
 import asyncHandler from 'express-async-handler';
 
@@ -11,7 +11,19 @@ const loginUser = async (email, password) => {
     throw new Error('Invalid email or password');
   }
 };
-
-export default {
-  loginUser,
+const getUserStatus = async (userId) => {
+  try {
+    const user = await findUserById(userId);
+    
+    if (!user) {
+      return { status: 'not_found' };
+    }
+    
+    return { status: user.status};
+  } catch (error) {
+    throw new Error('Error getting user status');
+  }
+};
+export default{
+  loginUser,getUserStatus
 };

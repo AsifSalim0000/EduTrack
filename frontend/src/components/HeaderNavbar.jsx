@@ -39,9 +39,15 @@ const HeaderNavbar = () => {
                         <li className="nav-item">
                             <Link className="nav-link" to="/courses">Courses</Link>
                         </li>
-                        <li className="nav-item">
-                            <Link className="nav-link" to="/become-a-tutor">Become a Tutor</Link>
-                        </li>
+                        {userInfo?.role === 'Instructor' ? (
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/instructor/dashboard">Instructor Dashboard</Link>
+                            </li>
+                        ) : (
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/become-a-tutor">Become a Tutor</Link>
+                            </li>
+                        )}
                         <li className="nav-item">
                             <Link className="nav-link" to="/pricing">Price & Planning</Link>
                         </li>

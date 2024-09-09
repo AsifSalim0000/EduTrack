@@ -10,9 +10,9 @@ const App = () => {
     <>
       <ToastContainer />
       <HeaderNavbar />
-      <Container className="my-2">
+      
         <Outlet />
-      </Container>
+   
     </>
   );
 };

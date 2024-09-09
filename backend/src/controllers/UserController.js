@@ -36,13 +36,11 @@ const googleAuthHandler = async (req, res) => {
   generateToken(res, user._id);
   
   res.json({
-    user: {
       email: user.email,
       _id: user._id,
       username: user.username,
       role: user.role,
       isAdmin: user.isAdmin,
-    },
   });
 };
 
@@ -64,5 +62,20 @@ const resetPasswordHandler = asyncHandler(async (req, res) => {
     res.status(404).json({ message: 'User not found' });
   }
 });
+const UserStatus = asyncHandler(async (req, res) => {
+  try {
+  
+    const userId = req.user._id; 
 
-export { logoutUser, loginUser, googleAuthHandler, resetPasswordHandler };
+    const status = await UserManagement.getUserStatus(userId);
+    
+    if (status.status === 'not_found') {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    return res.status(200).json(status);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+export { logoutUser, loginUser, googleAuthHandler, resetPasswordHandler ,UserStatus};

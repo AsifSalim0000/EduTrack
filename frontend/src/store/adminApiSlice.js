@@ -32,6 +32,20 @@ export const adminApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Student'],
     }),
+    acceptInstructorRequest: builder.mutation({
+      query: (teacherId) => ({
+        url: `${ADMIN_URL}/teachers/${teacherId}/accept`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['Teacher'],
+    }),
+    rejectInstructorRequest: builder.mutation({
+      query: (teacherId) => ({
+        url: `${ADMIN_URL}/teachers/${teacherId}/reject`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['Teacher'],
+    }),
   }),
 });
 
@@ -40,4 +54,6 @@ export const {
   useFetchStudentsQuery,
   useToggleBlockTeacherMutation,
   useToggleBlockStudentMutation,
+  useAcceptInstructorRequestMutation,
+  useRejectInstructorRequestMutation,
 } = adminApiSlice;

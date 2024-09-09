@@ -9,6 +9,8 @@ const HomePage = () => {
     <div>
       <HeroSection/>
       <NewCourses />
+      <NewCourses />
+      <hr />
       <Footer />
     </div>
   );
